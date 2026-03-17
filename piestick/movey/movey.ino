@@ -2,10 +2,10 @@
 #include <esp_now.h>
 #include <math.h>
 
-#define L1 120.0
-#define L2 110.0
-#define L3 90.0
-#define G  60.0
+#define L1 50.0
+#define L2 40.0
+#define L3 20.0
+#define G  20.0
 
 #define DELTA 5
 #define RAD_TO_DEG 57.2957795
@@ -15,17 +15,17 @@
 #define MIN_REACH 30
 
 // limites das juntas (graus)
-#define J1_MIN -180
-#define J1_MAX 180
+#define J1_MIN -168
+#define J1_MAX 168
 
-#define J2_MIN -100
-#define J2_MAX 100
+#define J2_MIN -120
+#define J2_MAX 120
 
 #define J3_MIN -135
 #define J3_MAX 135
 
-#define J4_MIN -180
-#define J4_MAX 180
+#define J4_MIN -145
+#define J4_MAX 145
 
 #define J5_MIN -90
 #define J5_MAX 90
@@ -53,7 +53,7 @@ float posZ = 120;
 robotCommand cmdToSend;
 
 
-uint8_t peerAddress[] = {0xC8, 0xF0, 0x9E, 0xF7, 0xC5, 0x3C};
+uint8_t peerAddress[] = {0x08, 0xA6, 0xF7, 0xBC, 0x3D, 0x70};
 
 esp_now_peer_info_t peerInfo;
 
@@ -85,6 +85,7 @@ void enviaCoordenadas()
                   cmdToSend.joint4,
                   cmdToSend.joint5,
                   cmdToSend.joint6);
+    Serial.printf("%.2f %.2f %.2f\n", posX,posY,posZ);
   }
   else
   {
@@ -133,7 +134,7 @@ void forwardKinematics(robotCommand *cmd, float *x, float *y, float *z)
 //------------------------------------------------
 void inverseKinematics(float x,float y,float z,robotCommand *cmd)
 {
-  float j1 = atan2(y,x);
+  float j1 = atan(y/x);
 
   float r = sqrt(x*x + y*y);
 
@@ -308,7 +309,7 @@ void setup()
   Serial.begin(115200);
 
   cmdToSend.joint1 = 0;
-  cmdToSend.joint2 = 0;
+  cmdToSend.joint2 = -90;
   cmdToSend.joint3 = 0;
   cmdToSend.joint4 = 0;
   cmdToSend.joint5 = 0;
@@ -353,13 +354,13 @@ void loop()
 {
   if(digitalRead(PIN_AVANCA)==LOW)
   {
-    moveY(DELTA);
+    moveX(DELTA);
     delay(300);
   }
 
   if(digitalRead(PIN_RECUA)==LOW)
   {
-    moveY(-DELTA);
+    moveX(-DELTA);
     delay(300);
   }
 }
