@@ -1,14 +1,23 @@
 #include <Arduino.h>
-#include <Keyboard.h>
-#include <Mouse.h>
 
-const int entrada1 = A0;
-const int entrada2 = A1;
-const int entrada3 = A2;
-const int entrada4 = A3;
-const int entrada5 = A4;
+#include "USB.h"
+#include "USBHIDKeyboard.h"
+#include "USBHIDMouse.h"
+
+USBHIDKeyboard Keyboard;
+USBHIDMouse Mouse;
+
+const int entrada1 = 1;
+const int entrada2 = 2;
+const int entrada3 = 3;
+const int entrada4 = 4;
+const int entrada5 = 5;
 
 
+#define VALOR_ADC_SF 4
+#define VALOR_ADC_SS 3
+#define VALOR_ADC_IF 1
+#define VALOR_ADC_IS 2
 
 
 int comandos[6][23] = {
@@ -175,6 +184,7 @@ void executarComando(const char* cmd) {
 // ==================== SETUP ====================
 void setup() {
   Serial.begin(9600);
+  USB.begin();
   Keyboard.begin();
   Mouse.begin();
   
@@ -188,67 +198,67 @@ void loop() {
   int valorADC4 = analogRead(entrada4);
   int valorADC5 = analogRead(entrada5);
 
-  float tensao1 = (valorADC1 / 1023.0) * 5.0;
-  float tensao2 = (valorADC2 / 1023.0) * 5.0;
-  float tensao3 = (valorADC3 / 1023.0) * 5.0;
-  float tensao4 = (valorADC4 / 1023.0) * 5.0;
-  float tensao5 = (valorADC5 / 1023.0) * 5.0;
+  float tensao1 = (valorADC1 / 4095.0) * 3.3;
+  float tensao2 = (valorADC2 / 4095.0) * 3.3;
+  float tensao3 = (valorADC3 / 4095.0) * 3.3;
+  float tensao4 = (valorADC4 / 4095.0) * 3.3;
+  float tensao5 = (valorADC5 / 4095.0) * 3.3;
 
   // -------- ENTRADA 1 --------
-  if (tensao1 < 2) {
-    if (tensao1 < 1) executarComando(traduzASCII(comandos[mode][0]));
+  if (tensao1 < VALOR_ADC_IS) {
+    if (tensao1 < VALOR_ADC_IF) executarComando(traduzASCII(comandos[mode][0]));
     else executarComando(traduzASCII(comandos[mode][1]));
   }
 
-  if (tensao1 > 3) {
-    if (tensao1 > 4) executarComando(traduzASCII(comandos[mode][2]));
+  if (tensao1 > VALOR_ADC_SS) {
+    if (tensao1 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][2]));
     else executarComando(traduzASCII(comandos[mode][3]));
   }
 
   // -------- ENTRADA 2 --------
-  if (tensao2 < 2) {
-    if (tensao2 < 1) executarComando(traduzASCII(comandos[mode][4]));
+  if (tensao2 < VALOR_ADC_IS) {
+    if (tensao2 < VALOR_ADC_IF) executarComando(traduzASCII(comandos[mode][4]));
     else executarComando(traduzASCII(comandos[mode][5]));
   }
 
-  if (tensao2 > 3) {
-    if (tensao2 > 4) executarComando(traduzASCII(comandos[mode][6]));
+  if (tensao2 > VALOR_ADC_SS) {
+    if (tensao2 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][6]));
     else executarComando(traduzASCII(comandos[mode][7]));
   }
 
   // -------- ENTRADA 3 --------
-  if (tensao3 < 2) {
-    if (tensao3 < 1) executarComando(traduzASCII(comandos[mode][8]));
+  if (tensao3 < VALOR_ADC_IS) {
+    if (tensao3 < VALOR_ADC_IF) executarComando(traduzASCII(comandos[mode][8]));
     else executarComando(traduzASCII(comandos[mode][9]));
   }
 
-  if (tensao3 > 3) {
-    if (tensao3 > 4) executarComando(traduzASCII(comandos[mode][10]));
+  if (tensao3 > VALOR_ADC_SS) {
+    if (tensao3 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][10]));
     else executarComando(traduzASCII(comandos[mode][11]));
   }
 
   // -------- ENTRADA 4 + 5 --------
-  if (tensao4 > 4) {
-    if (tensao5 > 4) executarComando(traduzASCII(comandos[mode][12]));
-    if (tensao5 < 2) executarComando(traduzASCII(comandos[mode][13]));
+  if (tensao4 > VALOR_ADC_SF) {
+    if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][12]));
+    if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][13]));
     else executarComando(traduzASCII(comandos[mode][14]));
   }
 
-  if (tensao4 < 2) {
-    if (tensao5 > 4) executarComando(traduzASCII(comandos[mode][15]));
-    if (tensao5 < 2) executarComando(traduzASCII(comandos[mode][16]));
+  if (tensao4 < VALOR_ADC_IS) {
+    if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][15]));
+    if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][16]));
     else executarComando(traduzASCII(comandos[mode][17]));
   }
 
-  if (tensao4 > 3) {
-    if (tensao5 > 4) executarComando(traduzASCII(comandos[mode][18]));
-    if (tensao5 < 2) executarComando(traduzASCII(comandos[mode][19]));
+  if (tensao4 > VALOR_ADC_SS) {
+    if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][18]));
+    if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][19]));
     else executarComando(traduzASCII(comandos[mode][20]));
   }
 
   // -------- ENTRADA 5 --------
-  if (tensao5 > 4) executarComando(traduzASCII(comandos[mode][21]));
-  if (tensao5 < 2) executarComando(traduzASCII(comandos[mode][22]));
+  if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][21]));
+  if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][22]));
 
   delay(50);
 }
