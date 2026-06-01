@@ -293,6 +293,123 @@ void moveZ(float deltaZ)
     Serial.println("Fora do alcance");
     return;
   }
+}  
+
+void moveJ1(float delta){
+  if(!envioConcluido) return;
+
+  robotCommand temp = cmdToSend;
+  temp.joint1 += delta;
+
+  if(!checkJointLimits(&temp)) return;
+
+  float x,y,z;
+  forwardKinematics(&temp,&x,&y,&z);
+
+  envioConcluido = false;
+
+  cmdToSend = temp;
+  posX = x; posY = y; posZ = z;
+
+  enviaCoordenadas();
+}
+
+  
+void moveJ2(float delta){
+  if(!envioConcluido) return;
+
+  robotCommand temp = cmdToSend;
+  temp.joint2 += delta;
+
+  if(!checkJointLimits(&temp)) return;
+
+  float x,y,z;
+  forwardKinematics(&temp,&x,&y,&z);
+
+  envioConcluido = false;
+
+  cmdToSend = temp;
+  posX = x; posY = y; posZ = z;
+
+  enviaCoordenadas();
+}
+
+  
+void moveJ3(float delta){
+  if(!envioConcluido) return;
+
+  robotCommand temp = cmdToSend;
+  temp.joint3 += delta;
+
+  if(!checkJointLimits(&temp)) return;
+
+  float x,y,z;
+  forwardKinematics(&temp,&x,&y,&z);
+
+  envioConcluido = false;
+
+  cmdToSend = temp;
+  posX = x; posY = y; posZ = z;
+
+  enviaCoordenadas();
+}  
+
+void moveJ4(float delta){
+  if(!envioConcluido) return;
+
+  robotCommand temp = cmdToSend;
+  temp.joint4 += delta;
+
+  if(!checkJointLimits(&temp)) return;
+
+  float x,y,z;
+  forwardKinematics(&temp,&x,&y,&z);
+
+  envioConcluido = false;
+
+  cmdToSend = temp;
+  posX = x; posY = y; posZ = z;
+
+  enviaCoordenadas();
+}  
+
+void moveJ5(float delta){
+  if(!envioConcluido) return;
+
+  robotCommand temp = cmdToSend;
+  temp.joint5 += delta;
+
+  if(!checkJointLimits(&temp)) return;
+
+  float x,y,z;
+  forwardKinematics(&temp,&x,&y,&z);
+
+  envioConcluido = false;
+
+  cmdToSend = temp;
+  posX = x; posY = y; posZ = z;
+
+  enviaCoordenadas();
+}
+
+void moveJ6(float delta){
+  if(!envioConcluido) return;
+
+  robotCommand temp = cmdToSend;
+  temp.joint6 += delta;
+
+  if(!checkJointLimits(&temp)) return;
+
+  float x,y,z;
+  forwardKinematics(&temp,&x,&y,&z);
+
+  envioConcluido = false;
+
+  cmdToSend = temp;
+  posX = x; posY = y; posZ = z;
+
+  enviaCoordenadas();
+}  
 
   robotCommand tempCmd = cmdToSend;
 
@@ -487,6 +604,7 @@ void executarComando(const char* cmd) {
       Serial.print("Comando mouse desconhecido: ");
       Serial.println(sub);
     }
+  } 
 
   if (strncmp(cmd, "move_", 5) == 0) {
 
@@ -503,23 +621,23 @@ void executarComando(const char* cmd) {
     else if (strcmp(sub, "z_neg") == 0) { moveZ(-DELTA); }
 
     // ===== JUNTAS =====
-    else if (strcmp(sub, "j1_pos") == 0) { Serial.println("J1+"); }
-    else if (strcmp(sub, "j1_neg") == 0) { Serial.println("J1-"); }
+    else if (strcmp(sub, "j1_pos") == 0) { moveJ1(DELTA); }
+    else if (strcmp(sub, "j1_neg") == 0) { moveJ1(-DELTA); }
 
-    else if (strcmp(sub, "j2_pos") == 0) { Serial.println("J2+"); }
-    else if (strcmp(sub, "j2_neg") == 0) { Serial.println("J2-"); }
+    else if (strcmp(sub, "j2_pos") == 0) { moveJ2(DELTA); }
+    else if (strcmp(sub, "j2_neg") == 0) { moveJ2(-DELTA); }
 
-    else if (strcmp(sub, "j3_pos") == 0) { Serial.println("J3+"); }
-    else if (strcmp(sub, "j3_neg") == 0) { Serial.println("J3-"); }
+    else if (strcmp(sub, "j3_pos") == 0) { moveJ3(DELTA); }
+    else if (strcmp(sub, "j3_neg") == 0) { moveJ3(-DELTA); }
 
-    else if (strcmp(sub, "j4_pos") == 0) { Serial.println("J4+"); }
-    else if (strcmp(sub, "j4_neg") == 0) { Serial.println("J4-"); }
+    else if (strcmp(sub, "j4_pos") == 0) { moveJ4(DELTA); }
+    else if (strcmp(sub, "j4_neg") == 0) { moveJ4(-DELTA); }
 
-    else if (strcmp(sub, "j5_pos") == 0) { Serial.println("J5+"); }
-    else if (strcmp(sub, "j5_neg") == 0) { Serial.println("J5-"); }
+    else if (strcmp(sub, "j5_pos") == 0) { moveJ5(DELTA); }
+    else if (strcmp(sub, "j5_neg") == 0) { moveJ5(-DELTA); }
 
-    else if (strcmp(sub, "j6_pos") == 0) { Serial.println("J6+"); }
-    else if (strcmp(sub, "j6_neg") == 0) { Serial.println("J6-"); }
+    else if (strcmp(sub, "j6_pos") == 0) { moveJ6(DELTA); }
+    else if (strcmp(sub, "j6_neg") == 0) { moveJ6(-DELTA); }
 
     return;
   }
@@ -550,9 +668,6 @@ void setup() {
   cmdToSend.joint6 = 0;
 
   forwardKinematics(&cmdToSend,&posX,&posY,&posZ);
-
-  pinMode(PIN_AVANCA,INPUT_PULLUP);
-  pinMode(PIN_RECUA,INPUT_PULLUP);
 
   WiFi.mode(WIFI_STA);
 
