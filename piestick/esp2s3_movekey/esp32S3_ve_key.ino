@@ -11,17 +11,17 @@
 USBHIDKeyboard Keyboard;
 USBHIDMouse Mouse;
 
-const int entrada1 = 1;
-const int entrada2 = 2;
+const int entrada1 = 4;
+const int entrada2 = 5;
 const int entrada3 = 3;
-const int entrada4 = 4;
-const int entrada5 = 5;
+const int entrada4 = 6;
+const int entrada5 = 7;
 
 
 #define VALOR_ADC_SF 2.5
 #define VALOR_ADC_SS 3
-#define VALOR_ADC_IF 1
-#define VALOR_ADC_IS 1.5
+#define VALOR_ADC_IF 0.8
+#define VALOR_ADC_IS 1.2
 
 #define L1 50.0
 #define L2 40.0
@@ -61,12 +61,12 @@ typedef struct {
 } robotCommand;
 
 float posX = 0;
-float posY = 200;
-float posZ = 120;
+float posY = 50;
+float posZ = 60;
 
 robotCommand cmdToSend;
 
-uint8_t peerAddress[] = {0x08, 0xA6, 0xF7, 0xBC, 0x3D, 0x70};
+uint8_t peerAddress[] = {0x80, 0xF3, 0xDA, 0x62, 0x93, 0x6C};
 
 esp_now_peer_info_t peerInfo;
 
@@ -197,14 +197,20 @@ bool checkJointLimits(robotCommand *cmd)
 //------------------------------------------------
 // CHECAR WORKSPACE
 //------------------------------------------------
-bool checkWorkspace(float x,float y,float z)
+int checkWorkspace(float a,float b,float c)
 {
-  float dist = sqrt(x*x + y*y + z*z);
+  float dist = sqrt(a*a + b*b + c*c);
+  Serial.print("\n");
+  Serial.print(dist);
+  Serial.print("\n");
+  Serial.print(MAX_REACH);
 
-  if(dist > MAX_REACH) return false;
-  if(dist < MIN_REACH) return false;
 
-  return true;
+  if(dist > MAX_REACH) return 0;
+  if(dist < MIN_REACH) return 0;
+
+
+  return 1;
 }
 
 
@@ -214,6 +220,8 @@ bool checkWorkspace(float x,float y,float z)
 //------------------------------------------------
 void moveX(float deltaX)
 {
+  Serial.print("moveX");
+  Serial.print(deltaX);
   if(!envioConcluido) return;
 
   float newX = posX + deltaX;
@@ -248,6 +256,8 @@ void moveX(float deltaX)
 
 void moveY(float deltaY)
 {
+  Serial.print("moveY");
+  Serial.print(deltaY);
   if(!envioConcluido) return;
 
   float newX = posX;
@@ -282,6 +292,8 @@ void moveY(float deltaY)
 
 void moveZ(float deltaZ)
 {
+  Serial.print("moveZ");
+  Serial.print(deltaZ);
   if(!envioConcluido) return;
 
   float newX = posX;
@@ -293,6 +305,23 @@ void moveZ(float deltaZ)
     Serial.println("Fora do alcance");
     return;
   }
+
+  robotCommand tempCmd = cmdToSend;
+
+  inverseKinematics(newX,newY,newZ,&tempCmd);
+
+  if(!checkJointLimits(&tempCmd))
+  {
+    Serial.println("Limite de junta");
+    return;
+  }
+
+  envioConcluido = false;
+
+  posZ = newZ;
+  cmdToSend = tempCmd;
+
+  enviaCoordenadas();
 }  
 
 void moveJ1(float delta){
@@ -411,27 +440,11 @@ void moveJ6(float delta){
   enviaCoordenadas();
 }  
 
-  robotCommand tempCmd = cmdToSend;
 
-  inverseKinematics(newX,newY,newZ,&tempCmd);
-
-  if(!checkJointLimits(&tempCmd))
-  {
-    Serial.println("Limite de junta");
-    return;
-  }
-
-  envioConcluido = false;
-
-  posZ = newZ;
-  cmdToSend = tempCmd;
-
-  enviaCoordenadas();
-}
 
 int comandos[6][23] = {
 
-  { 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54 },
+  { 0, 127, 127, 128, 128, 139, 0, 140, 0, 0, 0, 0, 0, 0, 123, 0,0, 124, 0, 0, 0, 125, 126 },
 
   { 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45 },
 
@@ -457,6 +470,7 @@ const char* traduzASCII(int codigo){
 
   switch(codigo){
 
+    case 0: return "";
     case 8: return "kb_backspace";
     case 9: return "kb_tab";
     case 13: return "kb_enter";
@@ -658,16 +672,18 @@ void setup() {
   Mouse.begin();
 
 
-  Serial.begin(115200);
+  //Serial.begin(115200);
 
   cmdToSend.joint1 = 0;
-  cmdToSend.joint2 = -90;
+  cmdToSend.joint2 = -40;
   cmdToSend.joint3 = 0;
   cmdToSend.joint4 = 0;
   cmdToSend.joint5 = 0;
   cmdToSend.joint6 = 0;
 
   forwardKinematics(&cmdToSend,&posX,&posY,&posZ);
+
+  
 
   WiFi.mode(WIFI_STA);
 
@@ -764,6 +780,15 @@ void loop() {
   // -------- ENTRADA 5 --------
   else if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][21]));
   else if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][22]));
+
+
+
+  Serial.print(posX);
+  Serial.print(",");
+  Serial.print(posY);
+  Serial.print(",");
+  Serial.print(posZ);
+  
 
   delay(50);
 }
