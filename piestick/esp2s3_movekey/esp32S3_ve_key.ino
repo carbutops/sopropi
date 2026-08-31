@@ -442,19 +442,20 @@ void moveJ6(float delta){
 
 
 
-int comandos[6][23] = {
+int comandos[6][22] = {
 
-  { 0, 127, 127, 128, 128, 139, 0, 140, 0, 0, 0, 0, 0, 0, 123, 0,0, 124, 0, 0, 0, 125, 126 },
+//{ S1+S20S30, S1+S2+S30, S1+S2+S3+, S1+S20S3+, S1-S20S30, S1-S2-S30,S1-S2-S3-, S1-S20S3-, S10S2+S30, S10S2+S3+, S10S2-S30, S10S2-S3-, S10S20S3+, S10S20S3-, S4+S50, S4+S5+, S4+S5-, S4-S50, S4-S5+, S4-S5-, S40S5+, S40S5-}
+  { 0, 127, 127, 128, 128, 139, 0, 140, 0, 0, 0, 0, 0, 0, 123, 0,0, 124, 0, 0, 0, 0  },
 
-  { 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45 },
+  { 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 0, 0 },
 
-  { 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68 },
+  { 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 0, 0  },
 
-  { 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91 },
+  { 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 0, 0  },
 
-  { 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114 },
+  { 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 0, 0  },
 
-  { 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137 }
+  { 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 0, 0  }
 
 };
 
@@ -726,60 +727,200 @@ void loop() {
   float tensao5 = (valorADC5 / 4095.0) * 3.3;
 
   // -------- ENTRADA 1 --------
-  if (tensao1 < VALOR_ADC_IS) {
-    if (tensao1 < VALOR_ADC_IF) executarComando(traduzASCII(comandos[mode][0]));
-    else executarComando(traduzASCII(comandos[mode][1]));
-  }
 
-  if (tensao1 > VALOR_ADC_SS) {
-    if (tensao1 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][2]));
-    else executarComando(traduzASCII(comandos[mode][3]));
-  }
+// { S1+S20S30, S1+S2+S30, S1+S2+S3+, S1+S20S3+,
+//   S1-S20S30, S1-S2-S30, S1-S2-S3-, S1-S20S3-,
+//   S10S2+S30, S10S2+S3+, S10S2-S30, S10S2-S3-,
+//   S10S20S3+, S10S20S3-,
+//   S4+S50, S4+S5+, S4+S5-,
+//   S4-S50, S4-S5+, S4-S5-,
+//   S40S5+, S40S5- }
 
-  // -------- ENTRADA 2 --------
-  if (tensao2 < VALOR_ADC_IS) {
-    if (tensao2 < VALOR_ADC_IF) executarComando(traduzASCII(comandos[mode][4]));
-    else executarComando(traduzASCII(comandos[mode][5]));
-  }
 
-  if (tensao2 > VALOR_ADC_SS) {
-    if (tensao2 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][6]));
-    else executarComando(traduzASCII(comandos[mode][7]));
-  }
+// =====================================================
+// S1+
+// =====================================================
 
-  // -------- ENTRADA 3 --------
-  if (tensao3 < VALOR_ADC_IS) {
-    if (tensao3 < VALOR_ADC_IF) executarComando(traduzASCII(comandos[mode][8]));
-    else executarComando(traduzASCII(comandos[mode][9]));
-  }
+if (tensao1 > VALOR_ADC_SF) {
 
-  if (tensao3 > VALOR_ADC_SS) {
-    if (tensao3 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][10]));
-    else executarComando(traduzASCII(comandos[mode][11]));
-  }
+    // S1+ S20
+    if (tensao2 >= VALOR_ADC_IS && tensao2 <= VALOR_ADC_SF) {
 
-  // -------- ENTRADA 4 + 5 --------
-  if (tensao4 > VALOR_ADC_SF) {
-    if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][12]));
-    if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][13]));
-    else executarComando(traduzASCII(comandos[mode][14]));
-  }
+        // S1+ S20 S30
+        if (tensao3 >= VALOR_ADC_IS && tensao3 <= VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][0]));
+        }
 
-  else if (tensao4 < VALOR_ADC_IS) {
-    if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][15]));
-    if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][16]));
-    else executarComando(traduzASCII(comandos[mode][17]));
-  }
+        // S1+ S20 S3+
+        else if (tensao3 > VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][3]));
+        }
+    }
 
-  else if (tensao4 > VALOR_ADC_SS) {
-    if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][18]));
-    if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][19]));
-    else executarComando(traduzASCII(comandos[mode][20]));
-  }
+    // S1+ S2+
+    else if (tensao2 > VALOR_ADC_SF) {
 
-  // -------- ENTRADA 5 --------
-  else if (tensao5 > VALOR_ADC_SF) executarComando(traduzASCII(comandos[mode][21]));
-  else if (tensao5 < VALOR_ADC_IS) executarComando(traduzASCII(comandos[mode][22]));
+        // S1+ S2+ S30
+        if (tensao3 >= VALOR_ADC_IS && tensao3 <= VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][1]));
+        }
+
+        // S1+ S2+ S3+
+        else if (tensao3 > VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][2]));
+        }
+    }
+}
+
+
+// =====================================================
+// S1-
+// =====================================================
+
+else if (tensao1 < VALOR_ADC_IS) {
+
+    // S1- S20
+    if (tensao2 >= VALOR_ADC_IS && tensao2 <= VALOR_ADC_SF) {
+
+        // S1- S20 S30
+        if (tensao3 >= VALOR_ADC_IS && tensao3 <= VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][4]));
+        }
+
+        // S1- S20 S3-
+        else if (tensao3 < VALOR_ADC_IS) {
+            executarComando(traduzASCII(comandos[mode][7]));
+        }
+    }
+
+    // S1- S2-
+    else if (tensao2 < VALOR_ADC_IS) {
+
+        // S1- S2- S30
+        if (tensao3 >= VALOR_ADC_IS && tensao3 <= VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][5]));
+        }
+
+        // S1- S2- S3-
+        else if (tensao3 < VALOR_ADC_IS) {
+            executarComando(traduzASCII(comandos[mode][6]));
+        }
+    }
+}
+
+
+// =====================================================
+// S10
+// =====================================================
+
+else {
+
+    // S10 S2+
+    if (tensao2 > VALOR_ADC_SF) {
+
+        // S10 S2+ S30
+        if (tensao3 >= VALOR_ADC_IS && tensao3 <= VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][8]));
+        }
+
+        // S10 S2+ S3+
+        else if (tensao3 > VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][9]));
+        }
+    }
+
+    // S10 S2-
+    else if (tensao2 < VALOR_ADC_IS) {
+
+        // S10 S2- S30
+        if (tensao3 >= VALOR_ADC_IS && tensao3 <= VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][10]));
+        }
+
+        // S10 S2- S3-
+        else if (tensao3 < VALOR_ADC_IS) {
+            executarComando(traduzASCII(comandos[mode][11]));
+        }
+    }
+
+    // S10 S20
+    else {
+
+        // S10 S20 S3+
+        if (tensao3 > VALOR_ADC_SF) {
+            executarComando(traduzASCII(comandos[mode][12]));
+        }
+
+        // S10 S20 S3-
+        else if (tensao3 < VALOR_ADC_IS) {
+            executarComando(traduzASCII(comandos[mode][13]));
+        }
+    }
+}
+
+
+// =====================================================
+// S4+
+// =====================================================
+
+if (tensao4 > VALOR_ADC_SF) {
+
+    // S4+ S50
+    if (tensao5 >= VALOR_ADC_IS && tensao5 <= VALOR_ADC_SF) {
+        executarComando(traduzASCII(comandos[mode][14]));
+    }
+
+    // S4+ S5+
+    else if (tensao5 > VALOR_ADC_SF) {
+        executarComando(traduzASCII(comandos[mode][15]));
+    }
+
+    // S4+ S5-
+    else if (tensao5 < VALOR_ADC_IS) {
+        executarComando(traduzASCII(comandos[mode][16]));
+    }
+}
+
+
+// =====================================================
+// S4-
+// =====================================================
+
+else if (tensao4 < VALOR_ADC_IS) {
+
+    // S4- S50
+    if (tensao5 >= VALOR_ADC_IS && tensao5 <= VALOR_ADC_SF) {
+        executarComando(traduzASCII(comandos[mode][17]));
+    }
+
+    // S4- S5+
+    else if (tensao5 > VALOR_ADC_SF) {
+        executarComando(traduzASCII(comandos[mode][18]));
+    }
+
+    // S4- S5-
+    else if (tensao5 < VALOR_ADC_IS) {
+        executarComando(traduzASCII(comandos[mode][19]));
+    }
+}
+
+
+// =====================================================
+// S40
+// =====================================================
+
+else {
+
+    // S40 S5+
+    if (tensao5 > VALOR_ADC_SF) {
+        executarComando(traduzASCII(comandos[mode][20]));
+    }
+
+    // S40 S5-
+    else if (tensao5 < VALOR_ADC_IS) {
+        executarComando(traduzASCII(comandos[mode][21]));
+    }
+}
 
 
 
