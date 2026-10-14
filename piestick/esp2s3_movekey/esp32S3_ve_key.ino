@@ -587,74 +587,58 @@ void moveJ6(float delta){
   enviaCoordenadas();
 }  
 
-float calcularRaioRadial(float j2, float j3, float j4)
+float calcularRaioRadial(robotCommand *cmd)
 {
-  float r = L1 * sin(j2)
-          + L2 * sin(j2 + j3)
-          + L3 * sin(j2 + j3 + j4);
+  float x, y, z;
+  forwardKinematics(cmd, &x, &y, &z);
 
-  float z = L1 * cos(j2)
-          + L2 * cos(j2 + j3)
-          + L3 * cos(j2 + j3 + j4);
-
-  return sqrt(r*r + z*z);
+  return sqrtf(x*x + y*y + z*z);
 }
 
 
-void movimentoRadial(float deltaP){
-  if(!envioConcluido) return;
+void movimentoRadial(float deltaP)
+{
+  if (!envioConcluido) return;
 
   robotCommand temp = cmdToSend;
-
-  float j2 = temp.joint2 / RAD_TO_DEG;
-  float j3Atual = temp.joint3 / RAD_TO_DEG;
-  float j4Atual = temp.joint4 / RAD_TO_DEG;
-
-  float gamma = j2 + j3Atual + j4Atual;
-  float delta = gamma - j2;
-
-  float pAtual = calcularRaioRadial(j2, j3Atual, j4Atual);
-  float pDesejado = pAtual + deltaP;
-
-  if(pDesejado <= 0.0f) return;
-
-  float C = L1*L1 + L2*L2 + L3*L3
-          + 2.0f*L1*L3*cos(j2 - gamma);
-
-  float U = L1*L2 + L2*L3*cos(delta);
-  float V = L2*L3*sin(delta);
-
-  float q = (pDesejado*pDesejado - C) / 2.0f;
-  float R = sqrt(U*U + V*V);
-
-  if(R < 0.000001f || fabs(q) > R) return;
-
-  float phi = atan2(V, U);
-  float ang = acos(q / R);
-
-  float j3A = phi + ang;
-  float j3B = phi - ang;
-
-  float j3Novo =
-      (fabs(j3A - j3Atual) < fabs(j3B - j3Atual))
-      ? j3A : j3B;
-
-  float j4Novo = gamma - j2 - j3Novo;
-
-  temp.joint3 = j3Novo * RAD_TO_DEG;
-  temp.joint4 = j4Novo * RAD_TO_DEG;
-
-  if(!checkJointLimits(&temp)) return;
 
   float x, y, z;
   forwardKinematics(&temp, &x, &y, &z);
 
-  envioConcluido = false;
+  float pAtual = sqrtf(x*x + y*y + z*z);
+  float pDesejado = pAtual + deltaP;
 
+  if (pDesejado <= 0.0f) return;
+
+  // Mantém a direção atual da posição.
+  float escala = pDesejado / pAtual;
+
+  float newX = x * escala;
+  float newY = y * escala;
+  float newZ = z * escala;
+
+  if (!checkWorkspace(newX, newY, newZ))
+  {
+    Serial.println("Fora do alcance");
+    return;
+  }
+
+  if (!inverseKinematics(newX, newY, newZ, &temp))
+  {
+    Serial.println("Nao foi possivel resolver a cinemática inversa");
+    return;
+  }
+
+  if (!checkJointLimits(&temp))
+  {
+    Serial.println("Limite de junta");
+    return;
+  }
+
+  forwardKinematics(&temp, &posX, &posY, &posZ);
+
+  envioConcluido = false;
   cmdToSend = temp;
-  posX = x;
-  posY = y;
-  posZ = z;
 
   enviaCoordenadas();
 }
